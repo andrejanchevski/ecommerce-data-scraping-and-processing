@@ -47,5 +47,9 @@ class EtsyShopOwners(scrapy.Item):
     ownerFollowing = scrapy.Field()
     ownerLocation = scrapy.Field()
 
+class EtsyCategoryItem(scrapy.Item):
+    categoryName = scrapy.Field()
+    parentCategoryName = scrapy.Field()
+
 
 
