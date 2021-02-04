@@ -5,13 +5,12 @@ from ..items import EtsyShopItem
 class EtsyShopSpider(scrapy.Spider):
     name = 'etsy_shops'
     start_urls = [
-        'https://www.etsy.com/search/shops?page=' + str(i) for i in range(1, 1200)
+        'https://www.etsy.com/search/shops?page=' + str(i) for i in range(1, 20)
     ]
 
     def parse(self, response, **kwargs):
         links = response.css('.wrap a::attr(href)').extract()
         for link in links:
-            print(str(link))
             yield response.follow(str(link), callback=self.parse_shop)
 
     def parse_shop(self, response):

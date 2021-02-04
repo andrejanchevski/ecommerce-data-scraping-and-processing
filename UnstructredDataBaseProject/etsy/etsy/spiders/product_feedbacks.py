@@ -35,10 +35,7 @@ class EtsyProductFeedbacksSpider(scrapy.Spider):
             items["productFeedbackRating"] = str(productFeedbackRating[0]).split(" ")[0]
             items["productFeedbackText"] = str(productFeedbackText[0]).strip()
             items["productFeedbackReviewer"] = productFeedbackReviewer
-            if str(productFeedbackDate[0]).startswith("Reviewed"):
-                productFeedbackDate = str(productFeedbackDate).split("inactive")[2].strip()
-                items["productFeedbackDate"] = productFeedbackDate
-            else:
-                items["productFeedbackDate"] = str(productFeedbackDate[0]).strip()
+            productFeedbackDate = productFeedbackDate[0].split()
+            items["productFeedbackDate"] = "".join(productFeedbackDate[-3:])
 
             yield items

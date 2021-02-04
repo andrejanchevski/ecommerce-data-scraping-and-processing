@@ -1,36 +1,38 @@
 import scrapy
 from ..items import EtsyShopOwners
-
+import json
 
 class EtsyShopSpider(scrapy.Spider):
-    name = 'etsy_shop_owners'
-    start_urls = [
-        'https://www.etsy.com/search/shops?page=' + str(i) for i in range(1, 1200)
-    ]
+    name = 'etsy_shop_owners_mongo'
+
+    def start_requests(self):
+        with open('etsy/shops_crawled.json') as filehandler:
+            shops = json.loads(filehandler.read())
+        urls = [s['shopOwnerLink'] for s in shops]
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response, **kwargs):
-        links = response.css('.real-name a::attr(href)').extract()
-        for link in links:
-            yield response.follow(str(link), callback=self.parse_shop_owner)
-
-    def parse_shop_owner(self, response):
         items = EtsyShopOwners()
-        shopName = response.css('#content .wt-text-center-xs::text').extract()
-        shopOwnerName = response.css('.wt-display-inline-flex::text').extract()
-        ownerFollowInfo = response.css('#content .wt-grid .wt-text-link-no-underline span::text').extract()
-        ownerLocation = response.css('.wt-nudge-b-1+ span::text').extract()
-        items['shopName'] = shopName
-        items['shopOwnerName'] = str(shopOwnerName[0]).strip()
-        items['ownerFollowing'] = ownerFollowInfo[0]
-        items['ownerFollowers'] = ownerFollowInfo[1]
-        items['ownerLocation'] = ownerLocation
-        yield items
+        shop_owner_name = response.css('.wt-display-inline-flex::text').extract()
+        shop_name = response.css('#content .wt-text-center-xs::text').extract_first()
+        owner_location = response.css('.wt-nudge-b-1+ span::text').extract_first()
+        owner_about_me = response.css('.wt-text-caption #wt-content-toggle-profile-about p::text').extract_first()
+        owner_following = 0
+        owner_followers = 0
+        owner_follow_info = response.css('#content .wt-text-link-no-underline span::text').extract()
+        if len(owner_follow_info) > 2:
+            owner_following = owner_follow_info[0]
+            owner_followers = owner_follow_info[1]
+        shopOwnerName = ''
+        if len(shop_owner_name) > 0:
+            shopOwnerName = str(shop_owner_name[0]).strip()
 
-
-
-
-
-
-
+        items['shopName'] = str(shop_name).strip() if shop_name else ''
+        items['shopOwnerName'] = shopOwnerName
+        items['ownerFollowing'] = owner_following
+        items['ownerFollowers'] = owner_followers
+        items['ownerLocation'] = owner_location if owner_location else ''
+        items['ownerAboutMe'] = owner_about_me if owner_about_me else ''
 
         yield items

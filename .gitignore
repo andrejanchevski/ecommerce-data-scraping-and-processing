@@ -1,6 +1,6 @@
 **/*.csv
 .idea/**
-
+**/*.json
 # Created by https://www.toptal.com/developers/gitignore/api/python,pycharm,windows,virtualenv
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,pycharm,windows,virtualenv
 

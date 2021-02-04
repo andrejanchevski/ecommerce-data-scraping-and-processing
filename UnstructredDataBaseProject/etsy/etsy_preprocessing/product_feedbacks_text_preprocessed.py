@@ -2,6 +2,7 @@ import nltk
 import re
 import pandas as pd
 from nltk.corpus import stopwords
+import json
 
 nltk.download('stopwords')
 
@@ -74,6 +75,20 @@ contraction_mapping = {"ain't": "is not", "aren't": "are not", "can't": "cannot"
                        "you're": "you are", "you've": "you have"}
 
 
+def clean_list_of_dicts(list_of_dicts):
+    """
+        input: list of dicts
+        output: list of dicts with preprocessed feedbackText
+    """
+
+    for x in list_of_dicts:
+        # x is a dict
+
+        x['feedbackText'] = text_cleaner(x['feedbackText'])
+
+    return list_of_dicts
+
+
 def text_cleaner(text):
     stop_words = set(stopwords.words('english'))
     newString = text.lower()
@@ -91,9 +106,22 @@ def text_cleaner(text):
     return (" ".join(long_words)).strip()
 
 
-data = pd.read_csv('../shops_feedbacks.csv')
+data = pd.read_json('../etsy/products_crawled.json')
 
 # for l in data.feedback:
 #     print(text_cleaner(l))
-data['feedback_processed'] = data.apply(lambda row: text_cleaner(row['feedback']), axis=1)
-data.to_csv('../shops_feedbacks_processed.csv')
+# print(data.apply(lambda x: [p['feedbackText'] for p in x['productReviews']], axis=1))
+# print(len(data))
+# # data['feedback_processed'] = data.apply(lambda row: text_cleaner(row['feedback']), axis=1)
+# data.productReviews = data.apply(lambda x: clean_list_of_dicts(x.productReviews), axis=1)
+# data.to_json('../products_preprocessed.json', index = False)
+with open('../etsy/products_crawled.json') as filehandler:
+    products = json.loads(filehandler.read())
+
+for p in products:
+    p['productReviews'] = clean_list_of_dicts(p['productReviews'])
+
+with open('../products_preprocessed.json', 'w', encoding='utf-8') as f:
+    json.dump(products, f, ensure_ascii=False, indent=4)
+
+# data.to_json('../shops_feedbacks_processed.csv')

@@ -17,7 +17,7 @@ class EtsyShopSpider(scrapy.Spider):
         listElements = categoryList.xpath('./li')
         for li in listElements:
             items = EtsyCategoryItem()
-            categoryName = li.xpath('./span/text()').extract()
+            categoryName = li.xpath('./span/text()').extract_first()
             items['categoryName'] = categoryName
             items['parentCategoryName'] = parentCategory
             yield items
